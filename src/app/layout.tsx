@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 
 import QueryProvider from '@/providers/QueryProvider'
+import GoogleMapProvider from '@/providers/GoogleMapProvider'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,7 +31,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
-        {children}
+          <GoogleMapProvider
+            apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+          >
+            {children}
+          </GoogleMapProvider>
         </QueryProvider>
       </body>
     </html>
