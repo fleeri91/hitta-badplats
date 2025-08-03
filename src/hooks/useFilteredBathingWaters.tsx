@@ -11,10 +11,6 @@ export const useFilteredBathingWaters = (
   const { municipality } = useMapFilterStore()
 
   return useMemo(() => {
-    if (!municipality) {
-      return []
-    }
-
     const baseFiltered = bathingWaters.filter((bw) => {
       const lat = parseFloat(bw.samplingPointPosition.latitude)
       const lon = parseFloat(bw.samplingPointPosition.longitude)
@@ -22,6 +18,10 @@ export const useFilteredBathingWaters = (
         bw.waterTypeId === WaterTypeId.HAV || bw.waterTypeId === WaterTypeId.SJÖ
       return isInsideSweden(lat, lon) && isWaterTypeValid
     })
+
+    if (!municipality) {
+      return baseFiltered
+    }
 
     return baseFiltered.filter(
       (bw) =>

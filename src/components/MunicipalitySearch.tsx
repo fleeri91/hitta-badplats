@@ -17,7 +17,7 @@ import { municipalities, MunicipalityName } from '@/constants/municipalities'
 
 interface MunicipalitySearchProps {
   value: MunicipalityName | null
-  onChange: (name: MunicipalityName) => void
+  onChange: (name: MunicipalityName | null) => void
 }
 
 const sortedMunicipalities = [...municipalities].sort((a, b) =>
@@ -28,7 +28,7 @@ export default function MunicipalitySearch({
   value,
   onChange,
 }: MunicipalitySearchProps) {
-  const [query, setQuery] = useState<string>(value || '')
+  const [query, setQuery] = useState<string>(value ?? '')
 
   const filteredMunicipalities = useMemo(() => {
     if (!query) return sortedMunicipalities
@@ -38,9 +38,9 @@ export default function MunicipalitySearch({
     )
   }, [query])
 
-  const handleOnChange = (value: MunicipalityName) => {
-    onChange(value)
-    setQuery(value)
+  const handleOnChange = (newValue: MunicipalityName | null) => {
+    onChange(newValue)
+    setQuery(newValue ?? '')
   }
 
   return (
@@ -53,7 +53,13 @@ export default function MunicipalitySearch({
               'w-full rounded-lg border-none bg-white/5 py-1.5 pr-8 pl-3 text-sm/6 text-white',
               'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 data-focus:outline-white/25'
             )}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              const val = event.target.value
+              setQuery(val)
+              if (val.trim() === '') {
+                onChange(null)
+              }
+            }}
           />
           <ComboboxButton className="group absolute inset-y-0 right-0 px-2.5">
             <ChevronDownIcon className="size-4 fill-white/60 group-data-hover:fill-white" />
@@ -68,6 +74,15 @@ export default function MunicipalitySearch({
             'transition duration-100 ease-in-out data-leave:data-closed:opacity-0'
           )}
         >
+          <ComboboxOption
+            value={null}
+            onClick={() => handleOnChange(null)}
+            className="group flex cursor-default items-center gap-2 rounded-lg px-3 py-1.5 select-none data-focus:bg-white/10"
+          >
+            <CheckIcon className="invisible size-4 fill-white group-data-selected:visible" />
+            <div className="text-sm/6 text-white italic">Alla kommuner</div>
+          </ComboboxOption>
+
           {filteredMunicipalities.map((municipality) => (
             <ComboboxOption
               key={municipality}
