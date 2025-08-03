@@ -133,8 +133,6 @@ export const municipalities = [
   'Mullsjö',
   'Munkedal',
   'Munkfors',
-  'Munkedal',
-  'Munkfors',
   'Mölndal',
   'Mönsterås',
   'Mörbylånga',
