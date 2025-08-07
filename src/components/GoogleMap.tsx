@@ -1,8 +1,11 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { Map, useMap } from '@vis.gl/react-google-maps'
-import { MarkerClusterer } from '@googlemaps/markerclusterer'
+import {
+  MarkerClusterer,
+  SuperClusterAlgorithm,
+} from '@googlemaps/markerclusterer'
 
 import { useBathingWaters } from '@/lib/queries'
 import { MAP_CONFIG } from '@/constants/map-config'
@@ -10,44 +13,73 @@ import { useFilteredBathingWaters } from '@/hooks/useFilteredBathingWaters'
 
 const GoogleMap = () => {
   const { data, isLoading } = useBathingWaters()
-  const map = useMap() // get current map instance from vis.gl context
-  const markersRef = useRef<google.maps.marker[]>([])
+  const map = useMap()
+  const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([])
   const clustererRef = useRef<MarkerClusterer | null>(null)
 
   const allWaters = data?.watersAndAdvisories.map((w) => w.bathingWater) || []
   const filteredBathingWaters = useFilteredBathingWaters(allWaters)
 
-  useEffect(() => {
+  const updateMarkersInView = useCallback(() => {
     if (!map || filteredBathingWaters.length === 0) return
 
-    // Clear existing markers
-    markersRef.current.forEach((m) => m.setMap(null))
+    const bounds = map.getBounds()
+    if (!bounds) return
+
+    const visibleWaters = filteredBathingWaters.filter((item) => {
+      const lat = parseFloat(item.samplingPointPosition.latitude)
+      const lng = parseFloat(item.samplingPointPosition.longitude)
+      return bounds.contains(new google.maps.LatLng(lat, lng))
+    })
+
+    markersRef.current.forEach((marker) => (marker.map = null))
     markersRef.current = []
 
-    // Create markers
-    const markers = filteredBathingWaters.map((item) => {
-      return new google.maps.Marker({
+    const markers = visibleWaters.map((item) => {
+      return new google.maps.marker.AdvancedMarkerElement({
         position: {
           lat: parseFloat(item.samplingPointPosition.latitude),
           lng: parseFloat(item.samplingPointPosition.longitude),
         },
+        map,
       })
     })
 
     markersRef.current = markers
 
-    // Create new clusterer
     if (clustererRef.current) {
       clustererRef.current.clearMarkers()
     }
 
-    clustererRef.current = new MarkerClusterer({ markers, map })
+    clustererRef.current = new MarkerClusterer({
+      map,
+      markers,
+      algorithm: new SuperClusterAlgorithm({
+        maxZoom: 18,
+        radius: 200,
+      }),
+    })
+  }, [filteredBathingWaters, map])
 
-    // Cleanup on unmount
-    return () => {
-      clustererRef.current?.clearMarkers()
+  const debouncedUpdateMarkers = useCallback(() => {
+    let timeout: NodeJS.Timeout
+    return (...args: []) => {
+      clearTimeout(timeout)
+      timeout = setTimeout(() => updateMarkersInView(...args), 300)
     }
-  }, [map, filteredBathingWaters])
+  }, [updateMarkersInView])()
+
+  useEffect(() => {
+    if (!map) return
+
+    const listener = map.addListener('idle', debouncedUpdateMarkers)
+
+    updateMarkersInView()
+
+    return () => {
+      google.maps.event.removeListener(listener)
+    }
+  }, [map, debouncedUpdateMarkers, updateMarkersInView])
 
   if (isLoading) return <>Loading...</>
   if (!data) return <>No data</>
