@@ -7,7 +7,7 @@ export default function GoogleMapProvider({
   ...props
 }: React.ComponentProps<typeof APIProvider>) {
   return (
-    <APIProvider apiKey={props.apiKey} libraries={['geometry']}>
+    <APIProvider apiKey={props.apiKey} libraries={['marker']}>
       {children}
     </APIProvider>
   )
