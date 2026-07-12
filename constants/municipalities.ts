@@ -285,3 +285,8 @@ export const municipalities = [
 ] as const
 
 export type MunicipalityName = (typeof municipalities)[number]
+export const DEFAULT_MUNICIPALITY: MunicipalityName = 'Stockholm'
+
+export function isMunicipalityName(value: string): value is MunicipalityName {
+  return (municipalities as readonly string[]).includes(value)
+}
