@@ -40,7 +40,7 @@ export const getPointForecast = async (
 }
 
 export const getBathingWaters = async (): Promise<BathingWaters> => {
-  const res = await fetch(HAVVATTEN_BASE, {
+  const res = await fetch(`${HAVVATTEN_BASE}/bathing-waters`, {
     next: { revalidate: 3600 },
   })
   if (!res.ok) throw new Error(`Kunde inte hämta badplatser (${res.status})`)
