@@ -40,14 +40,11 @@ export const getPointForecast = async (
 }
 
 export const getBathingWaters = async (): Promise<BathingWaters> => {
-  const response = await fetch(`${HAVVATTEN_BASE}/bathing-waters`)
-
-  if (!response.ok) {
-    throw new Error(`Network response was not ok: ${response.statusText}`)
-  }
-
-  const data: BathingWaters = await response.json()
-  return data
+  const res = await fetch(HAVVATTEN_BASE, {
+    next: { revalidate: 3600 },
+  })
+  if (!res.ok) throw new Error(`Kunde inte hämta badplatser (${res.status})`)
+  return res.json()
 }
 
 export const getBathingWaterProfile = async (
