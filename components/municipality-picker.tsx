@@ -31,7 +31,7 @@ export function MunicipalityPicker({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger className="flex items-center gap-2.25 rounded-xl border border-[#d7e6ea] bg-white px-3.5 py-2.5 text-[15px] text-[#16323d] min-w-[220px]">
+      <PopoverTrigger className="flex items-center gap-2.25 rounded-xl border border-[#d7e6ea] bg-white px-3.5 py-2.5 text-[15px] text-[#16323d] min-w-55">
         <Search size={15} className="text-[#9db8c0]" />
         <span className="flex-1 text-left">{value}</span>
       </PopoverTrigger>
