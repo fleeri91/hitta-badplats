@@ -24,7 +24,7 @@ export function BathingWaterCard({ site }: { site: EnrichedSite }) {
         </div>
         {site.hasAdvisory && (
           <div className="mt-2">
-            <span className="text-[11.5px] font-bold rounded-[7px] px-[9px] py-[3px] bg-[#fbf1dd] text-[#8a6218] border border-[#efd8a3]">
+            <span className="text-[11.5px] font-bold rounded-[7px] px-2.25 py-0.75 bg-[#fbf1dd] text-[#8a6218] border border-[#efd8a3]">
               ⚠ Avvikelse rapporterad
             </span>
             {site.advisoryText && (
