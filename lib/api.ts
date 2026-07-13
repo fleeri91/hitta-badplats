@@ -47,19 +47,12 @@ export const getBathingWaters = async (): Promise<BathingWaters> => {
   return res.json()
 }
 
-export const getBathingWaterProfile = async (
+export async function getBathingWaterProfile(
   id: string
-): Promise<BathingWaterProfile> => {
-  const response = await fetch(
-    `${HAVVATTEN_BASE}/bathing-waters/${id}/profiles`
-  )
-
-  if (!response.ok) {
-    throw new Error(`Network response was not ok: ${response.statusText}`)
-  }
-
-  const data: BathingWaterProfile = await response.json()
-  return data
+): Promise<BathingWaterProfile> {
+  const res = await fetch(`${HAVVATTEN_BASE}/${id}/profiles`)
+  if (!res.ok) throw new Error(`HaV svarade ${res.status} ${res.statusText}`)
+  return res.json()
 }
 
 export const getResults = async (id: string): Promise<BathingWaterResult> => {
