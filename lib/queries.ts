@@ -1,9 +1,20 @@
-import type { BathingWaters } from '@/types/HAV/BathingWaters'
+import type {
+  BathingWaters,
+  WatersAndAdvisory,
+} from '@/types/HAV/BathingWaters'
 import {
   DEFAULT_MUNICIPALITY,
   type MunicipalityName,
 } from '@/constants/municipalities'
-import { useQuery } from '@tanstack/react-query'
+import { useQueries, useQuery } from '@tanstack/react-query'
+import { EnrichedSite } from '@/types/EnrichedSite'
+import { PointForecast } from '@/types/SMHI/PointForecast'
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Fel vid hämtning: ${url}`)
+  return res.json()
+}
 
 export const queryKeys = {
   bathingWaters: (municipality: MunicipalityName) =>
@@ -24,4 +35,38 @@ export const useBathingWaters = (
     },
     staleTime: 1000 * 60 * 60 * 24,
   })
+}
+
+export function useEnrichedSites(list: WatersAndAdvisory[] | undefined) {
+  const results = useQueries({
+    queries: (list ?? []).map((item) => ({
+      queryKey: ['bathing-water', 'enriched', item.bathingWater.id],
+      queryFn: async (): Promise<EnrichedSite> => {
+        const { id, name, waterTypeIdText, euType, samplingPointPosition } =
+          item.bathingWater
+        const lat = parseFloat(samplingPointPosition.latitude)
+        const lon = parseFloat(samplingPointPosition.longitude)
+
+        const forecast = await fetchJson<PointForecast>(
+          `/api/smhi/forecast?lat=${lat}&lon=${lon}&timeseries=1`
+        ).catch(() => null)
+
+        return {
+          id,
+          name,
+          waterType: waterTypeIdText,
+          euType,
+          lat,
+          lon,
+          weatherNow: forecast?.timeSeries?.[0]?.data ?? null,
+        }
+      },
+      enabled: !!list,
+      staleTime: 10 * 60 * 1000,
+    })),
+  })
+  return {
+    sites: results.map((r) => r.data).filter((s): s is EnrichedSite => !!s),
+    isLoading: results.some((r) => r.isLoading),
+  }
 }

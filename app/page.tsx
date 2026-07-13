@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useBathingWaters } from '@/lib/queries'
+import { useBathingWaters, useEnrichedSites } from '@/lib/queries'
 import { BathingWaterCard } from '@/components/bathing-water-card'
 import { MunicipalityPicker } from '@/components/municipality-picker'
 import {
@@ -12,7 +12,9 @@ import {
 export default function Home() {
   const [municipality, setMunicipality] =
     useState<MunicipalityName>(DEFAULT_MUNICIPALITY)
-  const { data, isLoading } = useBathingWaters(municipality)
+
+  const { data } = useBathingWaters(municipality)
+  const { sites, isLoading } = useEnrichedSites(data?.watersAndAdvisories)
 
   return (
     <main className="max-w-5xl mx-auto p-6">
@@ -24,8 +26,8 @@ export default function Home() {
         <p>Laddar…</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data?.watersAndAdvisories.map((item) => (
-            <BathingWaterCard key={item.bathingWater.id} item={item} />
+          {sites.map((site) => (
+            <BathingWaterCard key={site.id} site={site} />
           ))}
         </div>
       )}
