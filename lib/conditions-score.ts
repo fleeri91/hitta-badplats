@@ -15,6 +15,7 @@ export interface ConditionsScoreResult {
   score: number
   notes: string[]
   hasAdvisory: boolean
+  advisoryText: string | null
 }
 
 export function comfortScore(
@@ -78,19 +79,23 @@ export function computeConditionsScore(params: {
     notes.push('Känd risk för algblomning')
   }
 
+  let advisoryText: string | null = null
   const hasAdvisory =
     abnormalSituations.length > 0 || adviceAgainstBathing.length > 0
   if (hasAdvisory) {
     score = Math.min(score, 18)
-    const text =
-      abnormalSituations[0]?.description ?? adviceAgainstBathing[0]?.description
-    notes.push(text ?? 'Kommunen har rapporterat en avvikelse')
+    advisoryText =
+      abnormalSituations[0]?.description ??
+      adviceAgainstBathing[0]?.description ??
+      'Kommunen har rapporterat en avvikelse'
+    notes.push(advisoryText)
   }
 
   return {
     score: Math.max(0, Math.min(100, Math.round(score))),
     notes,
     hasAdvisory,
+    advisoryText,
   }
 }
 

@@ -59,12 +59,13 @@ export function useEnrichedSites(list: WatersAndAdvisory[] | undefined) {
         ])
 
         const weatherNow = forecast?.timeSeries?.[0]?.data ?? null
-        const { score, notes, hasAdvisory } = computeConditionsScore({
-          profile,
-          weatherNow,
-          abnormalSituations: item.abnormalSituations,
-          adviceAgainstBathing: item.adviceAgainstBathing,
-        })
+        const { score, notes, hasAdvisory, advisoryText } =
+          computeConditionsScore({
+            profile,
+            weatherNow,
+            abnormalSituations: item.abnormalSituations,
+            adviceAgainstBathing: item.adviceAgainstBathing,
+          })
 
         return {
           id,
@@ -78,6 +79,7 @@ export function useEnrichedSites(list: WatersAndAdvisory[] | undefined) {
           conditionsScore: score,
           notes,
           hasAdvisory,
+          advisoryText,
         }
       },
       enabled: !!list,

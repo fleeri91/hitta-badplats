@@ -22,6 +22,18 @@ export function BathingWaterCard({ site }: { site: EnrichedSite }) {
             {site.weatherNow?.probability_of_precipitation ?? '–'}% regn
           </span>
         </div>
+        {site.hasAdvisory && (
+          <div className="mt-2">
+            <span className="text-[11.5px] font-bold rounded-[7px] px-[9px] py-[3px] bg-[#fbf1dd] text-[#8a6218] border border-[#efd8a3]">
+              ⚠ Avvikelse rapporterad
+            </span>
+            {site.advisoryText && (
+              <div className="text-[11px] text-muted-foreground mt-1">
+                {site.advisoryText}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Card>
   )

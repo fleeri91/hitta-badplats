@@ -13,4 +13,5 @@ export interface EnrichedSite {
   conditionsScore: number
   notes: string[]
   hasAdvisory: boolean
+  advisoryText: string | null
 }
