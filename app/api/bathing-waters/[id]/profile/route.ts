@@ -3,10 +3,11 @@ import { getBathingWaterProfile } from '@/lib/api'
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const data = await getBathingWaterProfile(params.id)
+    const { id } = await params
+    const data = await getBathingWaterProfile(id)
     return NextResponse.json(data)
   } catch (err) {
     console.error('Kunde inte hämta profil:', err)

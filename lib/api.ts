@@ -8,7 +8,7 @@ const SMHI_BASE =
   'https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point'
 
 const HAVVATTEN_BASE =
-  'https://gw.havochvatten.se/external-public/bathing-waters/v2'
+  'https://gw.havochvatten.se/external-public/bathing-waters/v2/bathing-waters'
 
 export const getPointForecast = async (
   lat: number,
@@ -40,7 +40,7 @@ export const getPointForecast = async (
 }
 
 export const getBathingWaters = async (): Promise<BathingWaters> => {
-  const res = await fetch(`${HAVVATTEN_BASE}/bathing-waters`, {
+  const res = await fetch(HAVVATTEN_BASE, {
     next: { revalidate: 3600 },
   })
   if (!res.ok) throw new Error(`Kunde inte hämta badplatser (${res.status})`)
@@ -50,7 +50,9 @@ export const getBathingWaters = async (): Promise<BathingWaters> => {
 export async function getBathingWaterProfile(
   id: string
 ): Promise<BathingWaterProfile> {
-  const res = await fetch(`${HAVVATTEN_BASE}/${id}/profiles`)
+  const url = `${HAVVATTEN_BASE}/${id}/profiles`
+  console.log('Hämtar profil från:', url)
+  const res = await fetch(url)
   if (!res.ok) throw new Error(`HaV svarade ${res.status} ${res.statusText}`)
   return res.json()
 }

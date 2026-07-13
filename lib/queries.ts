@@ -9,6 +9,8 @@ import {
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { EnrichedSite } from '@/types/EnrichedSite'
 import { PointForecast } from '@/types/SMHI/PointForecast'
+import { BathingWaterProfile } from '@/types/HAV/BathingWaterProfile'
+import { computeConditionsScore } from '@/lib/conditions-score'
 
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
@@ -47,9 +49,22 @@ export function useEnrichedSites(list: WatersAndAdvisory[] | undefined) {
         const lat = parseFloat(samplingPointPosition.latitude)
         const lon = parseFloat(samplingPointPosition.longitude)
 
-        const forecast = await fetchJson<PointForecast>(
-          `/api/smhi/forecast?lat=${lat}&lon=${lon}&timeseries=1`
-        ).catch(() => null)
+        const [forecast, profile] = await Promise.all([
+          fetchJson<PointForecast>(
+            `/api/smhi/forecast?lat=${lat}&lon=${lon}&timeseries=1`
+          ).catch(() => null),
+          fetchJson<BathingWaterProfile>(
+            `/api/bathing-waters/${id}/profile`
+          ).catch(() => null),
+        ])
+
+        const weatherNow = forecast?.timeSeries?.[0]?.data ?? null
+        const { score, notes, hasAdvisory } = computeConditionsScore({
+          profile,
+          weatherNow,
+          abnormalSituations: item.abnormalSituations,
+          adviceAgainstBathing: item.adviceAgainstBathing,
+        })
 
         return {
           id,
@@ -58,7 +73,11 @@ export function useEnrichedSites(list: WatersAndAdvisory[] | undefined) {
           euType,
           lat,
           lon,
-          weatherNow: forecast?.timeSeries?.[0]?.data ?? null,
+          weatherNow,
+          profile,
+          conditionsScore: score,
+          notes,
+          hasAdvisory,
         }
       },
       enabled: !!list,
